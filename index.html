@@ -1,0 +1,51 @@
+<!doctype html>
+<html>
+
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Hello TMA</title>
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <style>
+        body {
+            font-family: system-ui, sans-serif;
+            padding: 16px;
+        }
+
+        button {
+            padding: 10px 14px;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+        }
+    </style>
+</head>
+
+<body>
+    <h1>Привет из мини-приложения</h1>
+    <p id="user">Пользователь: неизвестно</p>
+    <button id="btn">Показать главную кнопку</button>
+
+    <script>
+        const tg = window.Telegram.WebApp;
+        tg.ready();
+
+        // тема из Telegram (темная/светлая)
+        document.body.style.background = tg.themeParams?.bg_color || '#fff';
+        document.body.style.color = tg.themeParams?.text_color || '#000';
+
+        // имя пользователя (в браузере вне Telegram будет "гость")
+        const user = tg.initDataUnsafe?.user?.first_name || 'гость';
+        document.getElementById('user').textContent = 'Пользователь: ' + user;
+
+        // пример главной кнопки Telegram
+        const btn = document.getElementById('btn');
+        btn.addEventListener('click', () => {
+            tg.MainButton.setText('Окей!');
+            tg.MainButton.show();
+            tg.MainButton.onClick(() => tg.close());
+        });
+    </script>
+</body>
+
+</html>
