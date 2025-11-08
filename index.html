@@ -48,7 +48,94 @@
       </select>
     </div>
   </div>
+<script>
+  // Инициализация Telegram-темы (если открыто внутри Telegram)
+  const tg = window.Telegram?.WebApp;
+  if (tg) {
+    tg.ready();
+    document.body.style.background = tg.themeParams?.bg_color || '';
+    document.body.style.color = tg.themeParams?.text_color || '';
+  }
+
+  const ring = document.getElementById('progress');
+  const timeEl = document.getElementById('time');
+  const startBtn = document.getElementById('start');
+  const resetBtn = document.getElementById('reset');
+  const presetSel = document.getElementById('preset');
+
+  // геометрия круга
+  const r = parseFloat(ring.getAttribute('r'));
+  const C = 2 * Math.PI * r;
+  ring.style.strokeDasharray = String(C);
+  ring.style.strokeDashoffset = String(C);
+
+  const pad2 = n => String(n).padStart(2, '0');
+  const fmt = s => `${pad2(Math.floor(s/60))}:${pad2(Math.floor(s%60))}`;
+
+  // состояние таймера
+  let baseMinutes = parseInt(presetSel.value, 10);
+  let total = baseMinutes * 60;
+  let remaining = total;
+  let running = false;
+  let timerId = null;
+  let endsAt = 0;
+
+  const draw = () => {
+    timeEl.textContent = fmt(remaining);
+    const progress = (total - remaining) / total;          // 0 → 1
+    ring.style.strokeDashoffset = String(C * (1 - progress)); // от пустого к полному
+  };
+
+  const resetTo = (minutes) => {
+    baseMinutes = minutes;
+    total = baseMinutes * 60;
+    remaining = total;
+    running = false;
+    if (timerId) { clearInterval(timerId); timerId = null; }
+    startBtn.textContent = 'Старт';
+    draw();
+  };
+
+  const tick = () => {
+    const now = Date.now();
+    if (now >= endsAt) {
+      remaining = 0;
+      draw();
+      clearInterval(timerId); timerId = null; running = false;
+      startBtn.textContent = 'Старт';
+      // лёгкая вибрация/хаптика в Telegram
+      if (tg?.HapticFeedback) tg.HapticFeedback.notificationOccurred('success');
+      return;
+    }
+    remaining = Math.max(0, Math.round((endsAt - now) / 1000));
+    draw();
+  };
+
+  startBtn.addEventListener('click', () => {
+    if (!running) {
+      running = true;
+      endsAt = Date.now() + remaining * 1000;       // точный отсчёт без дрейфа
+      timerId = setInterval(tick, 250);             // обновляем 4 раза в секунду
+      startBtn.textContent = 'Пауза';
+    } else {
+      running = false;
+      clearInterval(timerId); timerId = null;
+      // фиксируем оставшееся
+      remaining = Math.max(0, Math.round((endsAt - Date.now()) / 1000));
+      startBtn.textContent = 'Старт';
+      draw();
+    }
+  });
+
+  resetBtn.addEventListener('click', () => resetTo(parseInt(presetSel.value, 10)));
+  presetSel.addEventListener('change',  () => resetTo(parseInt(presetSel.value, 10)));
+
+  // первый рендер
+  resetTo(baseMinutes);
+</script>
+
 </body>
 
 
 </html>
+
