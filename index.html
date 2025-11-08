@@ -22,30 +22,33 @@
 </head>
 
 <body>
-    <h1>Привет из мини-приложения</h1>
-    <p id="user">Пользователь: неизвестно</p>
-    <button id="btn">Показать главную кнопку</button>
+  <h1>Pomodoro</h1>
 
-    <script>
-        const tg = window.Telegram.WebApp;
-        tg.ready();
+  <div id="panel" style="display:flex;flex-direction:column;align-items:center;gap:12px;">
+    <!-- Круговой прогресс (пока статичный) -->
+    <svg viewBox="0 0 120 120" width="220" height="220" aria-label="progress ring">
+      <!-- трек -->
+      <circle cx="60" cy="60" r="54" stroke="#e5e7eb" stroke-width="12" fill="none"/>
+      <!-- прогресс (пока на нуле) -->
+      <circle id="progress" cx="60" cy="60" r="54"
+              stroke="#8b5cf6" stroke-width="12" fill="none" stroke-linecap="round"
+              stroke-dasharray="339.292" stroke-dashoffset="339.292"
+              transform="rotate(-90 60 60)"/>
+    </svg>
 
-        // тема из Telegram (темная/светлая)
-        document.body.style.background = tg.themeParams?.bg_color || '#fff';
-        document.body.style.color = tg.themeParams?.text_color || '#000';
+    <div id="time" style="font-size:40px; font-weight:700;">25:00</div>
 
-        // имя пользователя (в браузере вне Telegram будет "гость")
-        const user = tg.initDataUnsafe?.user?.first_name || 'гость';
-        document.getElementById('user').textContent = 'Пользователь: ' + user;
-
-        // пример главной кнопки Telegram
-        const btn = document.getElementById('btn');
-        btn.addEventListener('click', () => {
-            tg.MainButton.setText('Окей!');
-            tg.MainButton.show();
-            tg.MainButton.onClick(() => tg.close());
-        });
-    </script>
+    <div id="controls" style="display:flex; gap:8px;">
+      <button id="start">Старт</button>
+      <button id="reset">Сброс</button>
+      <select id="preset" title="Длительность">
+        <option value="25" selected>25 мин</option>
+        <option value="15">15 мин</option>
+        <option value="5">5 мин</option>
+      </select>
+    </div>
+  </div>
 </body>
+
 
 </html>
